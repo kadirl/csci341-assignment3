@@ -8,6 +8,30 @@
     <a href="{{ url_for('create_caregiver') }}" class="btn btn-primary">Create New Caregiver</a>
 </div>
 
+<form method="GET" class="form" style="margin-bottom: 20px;">
+    <div class="form-group">
+        <label for="caregiving_type">Caregiving type (optional)</label>
+        <select id="caregiving_type" name="caregiving_type">
+            <option value="">All types</option>
+            {% for caregiving_type_option in caregiving_types %}
+            <option value="{{ caregiving_type_option }}" {% if caregiving_type_option == selected_caregiving_type %}selected{% endif %}>
+                {{ caregiving_type_option | title }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="city">City (optional)</label>
+        <input type="text" id="city" name="city" value="{{ search_city }}">
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a href="{{ url_for('list_caregivers') }}" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
+
 <table class="data-table">
     <thead>
         <tr>

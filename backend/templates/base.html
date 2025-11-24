@@ -9,9 +9,12 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <h1 class="logo">Caregivers Platform</h1>
+            <a href="{{ url_for('index') }}" style="text-decoration: none; color: white;">
+                <h1 class="logo">
+                    Caregivers Platform
+                </h1>
+            </a>
             <ul class="nav-links">
-                <li><a href="{{ url_for('index') }}">Home</a></li>
                 <li><a href="{{ url_for('list_users') }}">Users</a></li>
                 <li><a href="{{ url_for('list_caregivers') }}">Caregivers</a></li>
                 <li><a href="{{ url_for('list_members') }}">Members</a></li>
@@ -36,11 +39,6 @@
         {% block content %}{% endblock %}
     </div>
 
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2025 Caregivers Platform - CSCI 341 Assignment 3</p>
-        </div>
-    </footer>
 </body>
 </html>
 

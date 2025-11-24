@@ -1,27 +1,20 @@
-"""
-Flask Web Application for Caregivers Platform
-Part 3: CRUD Operations Web Interface
-"""
-
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash
 from models import (
-    Base, engine, SessionLocal,
+    SessionLocal,
     User, Caregiver, Member, Address, Job, JobApplication, Appointment
 )
-from datetime import date, time, datetime
+from datetime import datetime
 from decimal import Decimal
-from sqlalchemy import or_
 
 app = Flask(__name__)
-app.secret_key = 'caregivers-platform-secret-key-2025'
+app.secret_key = '67blud'
 
-# Get database session
 def get_db():
     db = SessionLocal()
     try:
         return db
     finally:
-        pass  # Don't close here, close in routes
+        pass 
 
 def close_db(db):
     db.close()
@@ -33,7 +26,7 @@ def index():
     return render_template('index.html')
 
 
-# ==================== USER CRUD ====================
+# user
 
 @app.route('/users')
 def list_users():
@@ -48,7 +41,6 @@ def list_users():
 
 @app.route('/users/create', methods=['GET', 'POST'])
 def create_user():
-    """Create a new user"""
     db = get_db()
     try:
         if request.method == 'POST':
@@ -76,7 +68,6 @@ def create_user():
 
 @app.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
 def edit_user(user_id):
-    """Edit an existing user"""
     db = get_db()
     try:
         user = db.query(User).filter(User.user_id == user_id).first()
@@ -107,7 +98,6 @@ def edit_user(user_id):
 
 @app.route('/users/<int:user_id>/delete', methods=['POST'])
 def delete_user(user_id):
-    """Delete a user"""
     db = get_db()
     try:
         user = db.query(User).filter(User.user_id == user_id).first()
@@ -125,22 +115,39 @@ def delete_user(user_id):
     return redirect(url_for('list_users'))
 
 
-# ==================== CAREGIVER CRUD ====================
+# caregiver
 
 @app.route('/caregivers')
 def list_caregivers():
-    """List all caregivers"""
+    caregiving_type_filter = request.args.get('caregiving_type', '').strip()
+    city_filter = request.args.get('city', '').strip()
+    
     db = get_db()
     try:
-        caregivers = db.query(Caregiver).join(User).all()
-        return render_template('caregivers/list.html', caregivers=caregivers)
+        caregivers_query = db.query(Caregiver).join(User)
+        
+        if caregiving_type_filter:
+            caregivers_query = caregivers_query.filter(Caregiver.caregiving_type == caregiving_type_filter)
+        
+        if city_filter:
+            caregivers_query = caregivers_query.filter(User.city.ilike(f"%{city_filter}%"))
+        
+        caregivers = caregivers_query.all()
+        caregiving_types = ['babysitter', 'elderly care', 'playmate for children']
+        
+        return render_template(
+            'caregivers/list.html',
+            caregivers=caregivers,
+            caregiving_types=caregiving_types,
+            selected_caregiving_type=caregiving_type_filter,
+            search_city=city_filter
+        )
     finally:
         close_db(db)
 
 
 @app.route('/caregivers/create', methods=['GET', 'POST'])
 def create_caregiver():
-    """Create a new caregiver"""
     db = get_db()
     try:
         if request.method == 'POST':
@@ -181,7 +188,6 @@ def create_caregiver():
 
 @app.route('/caregivers/<int:caregiver_id>/edit', methods=['GET', 'POST'])
 def edit_caregiver(caregiver_id):
-    """Edit an existing caregiver"""
     db = get_db()
     try:
         caregiver = db.query(Caregiver).filter(Caregiver.caregiver_user_id == caregiver_id).first()
@@ -216,7 +222,6 @@ def edit_caregiver(caregiver_id):
 
 @app.route('/caregivers/<int:caregiver_id>/delete', methods=['POST'])
 def delete_caregiver(caregiver_id):
-    """Delete a caregiver"""
     db = get_db()
     try:
         caregiver = db.query(Caregiver).filter(Caregiver.caregiver_user_id == caregiver_id).first()
@@ -234,11 +239,10 @@ def delete_caregiver(caregiver_id):
     return redirect(url_for('list_caregivers'))
 
 
-# ==================== MEMBER CRUD ====================
+# member
 
 @app.route('/members')
 def list_members():
-    """List all members"""
     db = get_db()
     try:
         members = db.query(Member).join(User).all()
@@ -249,7 +253,6 @@ def list_members():
 
 @app.route('/members/create', methods=['GET', 'POST'])
 def create_member():
-    """Create a new member"""
     db = get_db()
     try:
         if request.method == 'POST':
@@ -298,7 +301,6 @@ def create_member():
 
 @app.route('/members/<int:member_id>/edit', methods=['GET', 'POST'])
 def edit_member(member_id):
-    """Edit an existing member"""
     db = get_db()
     try:
         member = db.query(Member).filter(Member.member_user_id == member_id).first()
@@ -338,7 +340,6 @@ def edit_member(member_id):
 
 @app.route('/members/<int:member_id>/delete', methods=['POST'])
 def delete_member(member_id):
-    """Delete a member"""
     db = get_db()
     try:
         member = db.query(Member).filter(Member.member_user_id == member_id).first()
@@ -356,7 +357,7 @@ def delete_member(member_id):
     return redirect(url_for('list_members'))
 
 
-# ==================== JOB CRUD ====================
+# job
 
 @app.route('/jobs')
 def list_jobs():
@@ -371,7 +372,6 @@ def list_jobs():
 
 @app.route('/jobs/create', methods=['GET', 'POST'])
 def create_job():
-    """Create a new job"""
     db = get_db()
     try:
         if request.method == 'POST':
@@ -399,7 +399,6 @@ def create_job():
 
 @app.route('/jobs/<int:job_id>/edit', methods=['GET', 'POST'])
 def edit_job(job_id):
-    """Edit an existing job"""
     db = get_db()
     try:
         job = db.query(Job).filter(Job.job_id == job_id).first()
@@ -429,7 +428,6 @@ def edit_job(job_id):
 
 @app.route('/jobs/<int:job_id>/delete', methods=['POST'])
 def delete_job(job_id):
-    """Delete a job"""
     db = get_db()
     try:
         job = db.query(Job).filter(Job.job_id == job_id).first()
@@ -447,7 +445,7 @@ def delete_job(job_id):
     return redirect(url_for('list_jobs'))
 
 
-# ==================== JOB APPLICATION CRUD ====================
+# job application
 
 @app.route('/job_applications')
 def list_job_applications():
@@ -462,7 +460,6 @@ def list_job_applications():
 
 @app.route('/job_applications/create', methods=['GET', 'POST'])
 def create_job_application():
-    """Create a new job application"""
     db = get_db()
     try:
         if request.method == 'POST':
@@ -491,7 +488,6 @@ def create_job_application():
 
 @app.route('/job_applications/<int:caregiver_id>/<int:job_id>/delete', methods=['POST'])
 def delete_job_application(caregiver_id, job_id):
-    """Delete a job application"""
     db = get_db()
     try:
         application = db.query(JobApplication).filter(
@@ -512,11 +508,10 @@ def delete_job_application(caregiver_id, job_id):
     return redirect(url_for('list_job_applications'))
 
 
-# ==================== APPOINTMENT CRUD ====================
+# appointment
 
 @app.route('/appointments')
 def list_appointments():
-    """List all appointments"""
     db = get_db()
     try:
         appointments = db.query(Appointment).join(Caregiver).join(Member).all()

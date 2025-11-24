@@ -6,10 +6,8 @@ import os
 import getpass
 from pathlib import Path
 
-# Create base class for declarative models
 Base = declarative_base()
 
-# ORM Models
 class User(Base):
     __tablename__ = 'user'
     
@@ -22,9 +20,18 @@ class User(Base):
     profile_description = Column(Text)
     password = Column(String(255), nullable=False)
     
-    # Relationships
-    caregiver = relationship("Caregiver", back_populates="user", uselist=False, cascade="all, delete-orphan")
-    member = relationship("Member", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    # relations
+    caregiver = relationship(
+        "Caregiver", 
+        back_populates="user", 
+        uselist=False, 
+        cascade="all, delete-orphan")
+
+    member = relationship(
+        "Member", 
+        back_populates="user", 
+        uselist=False, 
+        cascade="all, delete-orphan")
 
 
 class Caregiver(Base):
@@ -84,7 +91,9 @@ class Job(Base):
     
     # Constraints
     __table_args__ = (
-        CheckConstraint("required_caregiving_type IN ('babysitter', 'elderly care', 'playmate for children')", name='check_required_caregiving_type'),
+        CheckConstraint(
+            "required_caregiving_type IN ('babysitter', 'elderly care', 'playmate for children')", 
+            name='check_required_caregiving_type'),
     )
     
     # Relationships
