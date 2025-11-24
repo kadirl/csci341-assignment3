@@ -22,7 +22,6 @@ def close_db(db):
 
 @app.route('/')
 def index():
-    """Home page with navigation to all tables"""
     return render_template('index.html')
 
 
@@ -30,7 +29,6 @@ def index():
 
 @app.route('/users')
 def list_users():
-    """List all users"""
     db = get_db()
     try:
         users = db.query(User).all()
