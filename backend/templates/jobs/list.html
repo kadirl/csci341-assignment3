@@ -8,6 +8,17 @@
     <a href="{{ url_for('create_job') }}" class="btn btn-primary">Create New Job</a>
 </div>
 
+<form method="GET" class="form" style="margin-bottom: 20px;">
+    <div class="form-group">
+        <label for="search">Search (type, member name, requirements)</label>
+        <input type="text" id="search" name="search" value="{{ search_query }}" placeholder="Search jobs...">
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a href="{{ url_for('list_jobs') }}" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
+
 <table class="data-table">
     <thead>
         <tr>

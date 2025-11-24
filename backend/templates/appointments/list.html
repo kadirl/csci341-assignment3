@@ -8,6 +8,17 @@
     <a href="{{ url_for('create_appointment') }}" class="btn btn-primary">Create New Appointment</a>
 </div>
 
+<form method="GET" class="form" style="margin-bottom: 20px;">
+    <div class="form-group">
+        <label for="search">Search (caregiver name, member name, status)</label>
+        <input type="text" id="search" name="search" value="{{ search_query }}" placeholder="Search appointments...">
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a href="{{ url_for('list_appointments') }}" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
+
 <table class="data-table">
     <thead>
         <tr>

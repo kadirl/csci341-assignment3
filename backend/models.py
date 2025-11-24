@@ -30,9 +30,8 @@ engine = create_engine(DATABASE_URL, echo=False)
 SessionLocal = sessionmaker(bind=engine)
 
 
-# ORM Models
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = 'users'
     
     user_id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(255), unique=True, nullable=False)
@@ -43,26 +42,35 @@ class User(Base):
     profile_description = Column(Text)
     password = Column(String(255), nullable=False)
     
-    # Relationships
-    caregiver = relationship("Caregiver", back_populates="user", uselist=False, cascade="all, delete-orphan")
-    member = relationship("Member", back_populates="user", uselist=False, cascade="all, delete-orphan")
+
+    caregiver = relationship(
+        "Caregiver", 
+        back_populates="user", 
+        uselist=False, 
+        cascade="all, delete-orphan")
+
+    member = relationship(
+        "Member", 
+        back_populates="user", 
+        uselist=False, 
+        cascade="all, delete-orphan")
 
 
 class Caregiver(Base):
     __tablename__ = 'caregiver'
     
-    caregiver_user_id = Column(Integer, ForeignKey('user.user_id', ondelete='CASCADE'), primary_key=True)
+    caregiver_user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'), primary_key=True)
     photo = Column(String(255))
     gender = Column(String(20), nullable=False)
     caregiving_type = Column(String(50), nullable=False)
     hourly_rate = Column(DECIMAL(10, 2), nullable=False)
     
-    # Constraints
+
     __table_args__ = (
         CheckConstraint("caregiving_type IN ('babysitter', 'elderly care', 'playmate for children')", name='check_caregiving_type'),
     )
     
-    # Relationships
+
     user = relationship("User", back_populates="caregiver")
     job_applications = relationship("JobApplication", back_populates="caregiver", cascade="all, delete-orphan")
     appointments = relationship("Appointment", back_populates="caregiver", cascade="all, delete-orphan")
@@ -71,11 +79,11 @@ class Caregiver(Base):
 class Member(Base):
     __tablename__ = 'member'
     
-    member_user_id = Column(Integer, ForeignKey('user.user_id', ondelete='CASCADE'), primary_key=True)
+    member_user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'), primary_key=True)
     house_rules = Column(Text)
     dependent_description = Column(Text)
     
-    # Relationships
+
     user = relationship("User", back_populates="member")
     address = relationship("Address", back_populates="member", uselist=False, cascade="all, delete-orphan")
     jobs = relationship("Job", back_populates="member", cascade="all, delete-orphan")
@@ -90,7 +98,7 @@ class Address(Base):
     street = Column(String(255), nullable=False)
     town = Column(String(100), nullable=False)
     
-    # Relationships
+
     member = relationship("Member", back_populates="address")
 
 
@@ -103,12 +111,14 @@ class Job(Base):
     other_requirements = Column(Text)
     date_posted = Column(Date, nullable=False)
     
-    # Constraints
+
     __table_args__ = (
-        CheckConstraint("required_caregiving_type IN ('babysitter', 'elderly care', 'playmate for children')", name='check_required_caregiving_type'),
+        CheckConstraint(
+            "required_caregiving_type IN ('babysitter', 'elderly care', 'playmate for children')", 
+            name='check_required_caregiving_type'),
     )
     
-    # Relationships
+
     member = relationship("Member", back_populates="jobs")
     job_applications = relationship("JobApplication", back_populates="job", cascade="all, delete-orphan")
 
@@ -120,7 +130,7 @@ class JobApplication(Base):
     job_id = Column(Integer, ForeignKey('job.job_id', ondelete='CASCADE'), primary_key=True)
     date_applied = Column(Date, nullable=False)
     
-    # Relationships
+
     caregiver = relationship("Caregiver", back_populates="job_applications")
     job = relationship("Job", back_populates="job_applications")
 
@@ -136,12 +146,11 @@ class Appointment(Base):
     work_hours = Column(DECIMAL(5, 2), nullable=False)
     status = Column(String(20), nullable=False)
     
-    # Constraints
+
     __table_args__ = (
         CheckConstraint("status IN ('pending', 'accepted', 'declined')", name='check_status'),
     )
     
-    # Relationships
+
     caregiver = relationship("Caregiver", back_populates="appointments")
     member = relationship("Member", back_populates="appointments")
-

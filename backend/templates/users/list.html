@@ -8,6 +8,17 @@
     <a href="{{ url_for('create_user') }}" class="btn btn-primary">Create New User</a>
 </div>
 
+<form method="GET" class="form" style="margin-bottom: 20px;">
+    <div class="form-group">
+        <label for="search">Search (name, email, city)</label>
+        <input type="text" id="search" name="search" value="{{ search_query }}" placeholder="Search users...">
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a href="{{ url_for('list_users') }}" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
+
 <table class="data-table">
     <thead>
         <tr>

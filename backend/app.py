@@ -29,10 +29,19 @@ def index():
 
 @app.route('/users')
 def list_users():
+    search_query = request.args.get('search', '').strip()
     db = get_db()
     try:
-        users = db.query(User).all()
-        return render_template('users/list.html', users=users)
+        users_query = db.query(User)
+        if search_query:
+            users_query = users_query.filter(
+                (User.given_name.ilike(f"%{search_query}%")) |
+                (User.surname.ilike(f"%{search_query}%")) |
+                (User.email.ilike(f"%{search_query}%")) |
+                (User.city.ilike(f"%{search_query}%"))
+            )
+        users = users_query.all()
+        return render_template('users/list.html', users=users, search_query=search_query)
     finally:
         close_db(db)
 
@@ -241,10 +250,18 @@ def delete_caregiver(caregiver_id):
 
 @app.route('/members')
 def list_members():
+    search_query = request.args.get('search', '').strip()
     db = get_db()
     try:
-        members = db.query(Member).join(User).all()
-        return render_template('members/list.html', members=members)
+        members_query = db.query(Member).join(User)
+        if search_query:
+            members_query = members_query.filter(
+                (User.given_name.ilike(f"%{search_query}%")) |
+                (User.surname.ilike(f"%{search_query}%")) |
+                (User.city.ilike(f"%{search_query}%"))
+            )
+        members = members_query.all()
+        return render_template('members/list.html', members=members, search_query=search_query)
     finally:
         close_db(db)
 
@@ -359,11 +376,19 @@ def delete_member(member_id):
 
 @app.route('/jobs')
 def list_jobs():
-    """List all jobs"""
+    search_query = request.args.get('search', '').strip()
     db = get_db()
     try:
-        jobs = db.query(Job).join(Member).join(User).all()
-        return render_template('jobs/list.html', jobs=jobs)
+        jobs_query = db.query(Job).join(Member).join(User)
+        if search_query:
+            jobs_query = jobs_query.filter(
+                (Job.required_caregiving_type.ilike(f"%{search_query}%")) |
+                (User.given_name.ilike(f"%{search_query}%")) |
+                (User.surname.ilike(f"%{search_query}%")) |
+                (Job.other_requirements.ilike(f"%{search_query}%"))
+            )
+        jobs = jobs_query.all()
+        return render_template('jobs/list.html', jobs=jobs, search_query=search_query)
     finally:
         close_db(db)
 
@@ -447,11 +472,18 @@ def delete_job(job_id):
 
 @app.route('/job_applications')
 def list_job_applications():
-    """List all job applications"""
+    search_query = request.args.get('search', '').strip()
     db = get_db()
     try:
-        applications = db.query(JobApplication).join(Caregiver).join(Job).all()
-        return render_template('job_applications/list.html', applications=applications)
+        applications_query = db.query(JobApplication).join(Caregiver).join(User).join(Job)
+        if search_query:
+            applications_query = applications_query.filter(
+                (User.given_name.ilike(f"%{search_query}%")) |
+                (User.surname.ilike(f"%{search_query}%")) |
+                (Job.required_caregiving_type.ilike(f"%{search_query}%"))
+            )
+        applications = applications_query.all()
+        return render_template('job_applications/list.html', applications=applications, search_query=search_query)
     finally:
         close_db(db)
 
@@ -510,10 +542,26 @@ def delete_job_application(caregiver_id, job_id):
 
 @app.route('/appointments')
 def list_appointments():
+    search_query = request.args.get('search', '').strip()
     db = get_db()
     try:
-        appointments = db.query(Appointment).join(Caregiver).join(Member).all()
-        return render_template('appointments/list.html', appointments=appointments)
+        from sqlalchemy.orm import aliased
+        from sqlalchemy import or_
+        caregiver_user = aliased(User)
+        member_user = aliased(User)
+        appointments_query = db.query(Appointment).join(Caregiver).join(caregiver_user, Caregiver.caregiver_user_id == caregiver_user.user_id).join(Member, Appointment.member_user_id == Member.member_user_id).join(member_user, Member.member_user_id == member_user.user_id)
+        if search_query:
+            appointments_query = appointments_query.filter(
+                or_(
+                    caregiver_user.given_name.ilike(f"%{search_query}%"),
+                    caregiver_user.surname.ilike(f"%{search_query}%"),
+                    member_user.given_name.ilike(f"%{search_query}%"),
+                    member_user.surname.ilike(f"%{search_query}%"),
+                    Appointment.status.ilike(f"%{search_query}%")
+                )
+            )
+        appointments = appointments_query.all()
+        return render_template('appointments/list.html', appointments=appointments, search_query=search_query)
     finally:
         close_db(db)
 

@@ -1,8 +1,3 @@
--- Active: 1763935946283@@localhost@5432@caregivers_db
--- CSCI 341 Assignment 3 - Database Schema
--- Online Caregivers Platform
-
--- Drop tables if they exist (for clean setup)
 DROP TABLE IF EXISTS appointment CASCADE;
 DROP TABLE IF EXISTS job_application CASCADE;
 DROP TABLE IF EXISTS job CASCADE;
@@ -11,7 +6,6 @@ DROP TABLE IF EXISTS member CASCADE;
 DROP TABLE IF EXISTS caregiver CASCADE;
 DROP TABLE IF EXISTS "user" CASCADE;
 
--- Create USER table
 CREATE TABLE "user" (
     user_id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -23,7 +17,6 @@ CREATE TABLE "user" (
     password VARCHAR(255) NOT NULL
 );
 
--- Create CAREGIVER table
 CREATE TABLE caregiver (
     caregiver_user_id INTEGER PRIMARY KEY,
     photo VARCHAR(255),
@@ -33,7 +26,6 @@ CREATE TABLE caregiver (
     FOREIGN KEY (caregiver_user_id) REFERENCES "user"(user_id) ON DELETE CASCADE
 );
 
--- Create MEMBER table
 CREATE TABLE member (
     member_user_id INTEGER PRIMARY KEY,
     house_rules TEXT,
@@ -41,7 +33,6 @@ CREATE TABLE member (
     FOREIGN KEY (member_user_id) REFERENCES "user"(user_id) ON DELETE CASCADE
 );
 
--- Create ADDRESS table
 CREATE TABLE address (
     member_user_id INTEGER PRIMARY KEY,
     house_number VARCHAR(20) NOT NULL,
@@ -50,7 +41,6 @@ CREATE TABLE address (
     FOREIGN KEY (member_user_id) REFERENCES member(member_user_id) ON DELETE CASCADE
 );
 
--- Create JOB table
 CREATE TABLE job (
     job_id SERIAL PRIMARY KEY,
     member_user_id INTEGER NOT NULL,
@@ -60,7 +50,6 @@ CREATE TABLE job (
     FOREIGN KEY (member_user_id) REFERENCES member(member_user_id) ON DELETE CASCADE
 );
 
--- Create JOB_APPLICATION table
 CREATE TABLE job_application (
     caregiver_user_id INTEGER NOT NULL,
     job_id INTEGER NOT NULL,
@@ -70,7 +59,6 @@ CREATE TABLE job_application (
     FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
 );
 
--- Create APPOINTMENT table
 CREATE TABLE appointment (
     appointment_id SERIAL PRIMARY KEY,
     caregiver_user_id INTEGER NOT NULL,
