@@ -9,7 +9,7 @@ from pathlib import Path
 Base = declarative_base()
 
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = 'users'
     
     user_id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(255), unique=True, nullable=False)
@@ -20,7 +20,7 @@ class User(Base):
     profile_description = Column(Text)
     password = Column(String(255), nullable=False)
     
-    # relations
+
     caregiver = relationship(
         "Caregiver", 
         back_populates="user", 
@@ -37,18 +37,18 @@ class User(Base):
 class Caregiver(Base):
     __tablename__ = 'caregiver'
     
-    caregiver_user_id = Column(Integer, ForeignKey('user.user_id', ondelete='CASCADE'), primary_key=True)
+    caregiver_user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'), primary_key=True)
     photo = Column(String(255))
     gender = Column(String(20), nullable=False)
     caregiving_type = Column(String(50), nullable=False)
     hourly_rate = Column(DECIMAL(10, 2), nullable=False)
     
-    # Constraints
+
     __table_args__ = (
         CheckConstraint("caregiving_type IN ('babysitter', 'elderly care', 'playmate for children')", name='check_caregiving_type'),
     )
     
-    # Relationships
+
     user = relationship("User", back_populates="caregiver")
     job_applications = relationship("JobApplication", back_populates="caregiver", cascade="all, delete-orphan")
     appointments = relationship("Appointment", back_populates="caregiver", cascade="all, delete-orphan")
@@ -57,11 +57,11 @@ class Caregiver(Base):
 class Member(Base):
     __tablename__ = 'member'
     
-    member_user_id = Column(Integer, ForeignKey('user.user_id', ondelete='CASCADE'), primary_key=True)
+    member_user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'), primary_key=True)
     house_rules = Column(Text)
     dependent_description = Column(Text)
     
-    # Relationships
+
     user = relationship("User", back_populates="member")
     address = relationship("Address", back_populates="member", uselist=False, cascade="all, delete-orphan")
     jobs = relationship("Job", back_populates="member", cascade="all, delete-orphan")
@@ -76,7 +76,7 @@ class Address(Base):
     street = Column(String(255), nullable=False)
     town = Column(String(100), nullable=False)
     
-    # Relationships
+
     member = relationship("Member", back_populates="address")
 
 
@@ -89,14 +89,14 @@ class Job(Base):
     other_requirements = Column(Text)
     date_posted = Column(Date, nullable=False)
     
-    # Constraints
+
     __table_args__ = (
         CheckConstraint(
             "required_caregiving_type IN ('babysitter', 'elderly care', 'playmate for children')", 
             name='check_required_caregiving_type'),
     )
     
-    # Relationships
+
     member = relationship("Member", back_populates="jobs")
     job_applications = relationship("JobApplication", back_populates="job", cascade="all, delete-orphan")
 
@@ -108,7 +108,7 @@ class JobApplication(Base):
     job_id = Column(Integer, ForeignKey('job.job_id', ondelete='CASCADE'), primary_key=True)
     date_applied = Column(Date, nullable=False)
     
-    # Relationships
+
     caregiver = relationship("Caregiver", back_populates="job_applications")
     job = relationship("Job", back_populates="job_applications")
 
@@ -124,17 +124,17 @@ class Appointment(Base):
     work_hours = Column(DECIMAL(5, 2), nullable=False)
     status = Column(String(20), nullable=False)
     
-    # Constraints
+
     __table_args__ = (
         CheckConstraint("status IN ('pending', 'accepted', 'declined')", name='check_status'),
     )
     
-    # Relationships
+
     caregiver = relationship("Caregiver", back_populates="appointments")
     member = relationship("Member", back_populates="appointments")
 
 
-# Database connection configuration
+
 import getpass
 DB_USER = os.getenv('DB_USER', getpass.getuser())
 DB_PASSWORD = os.getenv('DB_PASSWORD', '')
@@ -142,52 +142,42 @@ DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_PORT = os.getenv('DB_PORT', '5432')
 DB_NAME = os.getenv('DB_NAME', 'caregivers_db')
 
-# Create database connection string
+
 if DB_PASSWORD:
     DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 else:
     DATABASE_URL = f"postgresql://{DB_USER}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# Create engine and session
+
 engine = create_engine(DATABASE_URL, echo=False)
 Session = sessionmaker(bind=engine)
 session = Session()
 
 
 def create_tables():
-    """
-    Part 2.1: Create SQL Statements
-    Create all tables according to the schema
-    """
-    print("=" * 80)
     print("PART 2.1: Creating Tables")
-    print("=" * 80)
     
-    # Drop view first if it exists (from previous runs)
     from sqlalchemy import text as sql_text
     with engine.connect() as conn:
         conn.execute(sql_text("DROP VIEW IF EXISTS job_applications_view CASCADE"))
+        conn.execute(sql_text("DROP TABLE IF EXISTS appointment CASCADE"))
+        conn.execute(sql_text("DROP TABLE IF EXISTS job_application CASCADE"))
+        conn.execute(sql_text("DROP TABLE IF EXISTS caregiver CASCADE"))
+        conn.execute(sql_text("DROP TABLE IF EXISTS member CASCADE"))
+        conn.execute(sql_text("DROP TABLE IF EXISTS job CASCADE"))
+        conn.execute(sql_text('DROP TABLE IF EXISTS "users" CASCADE'))
         conn.commit()
     
-    # Drop all tables if they exist
     Base.metadata.drop_all(engine)
     
-    # Create all tables
     Base.metadata.create_all(engine)
     
     print("All tables created successfully!\n")
 
 
 def insert_data():
-    """
-    Part 2.2: Insert SQL Statements
-    Insert data into appropriate tables
-    """
-    print("=" * 80)
     print("PART 2.2: Inserting Data")
-    print("=" * 80)
     
-    # Insert Users
     users_data = [
         User(email='arman.armanov@email.com', given_name='Arman', surname='Armanov', city='Astana', phone_number='+77771234567', profile_description='Experienced caregiver', password='password123'),
         User(email='amina.aminova@email.com', given_name='Amina', surname='Aminova', city='Almaty', phone_number='+77772345678', profile_description='Family member seeking care', password='password123'),
@@ -214,10 +204,8 @@ def insert_data():
     session.add_all(users_data)
     session.commit()
     
-    # Get user IDs after commit
     users_dict = {f"{u.given_name}_{u.surname}": u.user_id for u in users_data}
     
-    # Insert Caregivers
     caregivers_data = [
         Caregiver(caregiver_user_id=users_dict['Arman_Armanov'], photo='photo1.jpg', gender='Male', caregiving_type='babysitter', hourly_rate=8.50),
         Caregiver(caregiver_user_id=users_dict['David_Davidov'], photo='photo3.jpg', gender='Male', caregiving_type='babysitter', hourly_rate=9.00),
@@ -235,7 +223,6 @@ def insert_data():
     session.add_all(caregivers_data)
     session.commit()
     
-    # Insert Members
     members_data = [
         Member(member_user_id=users_dict['Amina_Aminova'], house_rules='No pets. Please maintain hygiene.', dependent_description='Looking for babysitter for 3-year-old daughter'),
         Member(member_user_id=users_dict['Elena_Elenova'], house_rules='No pets. Quiet environment required.', dependent_description='Elderly mother needs daily care, age 75'),
@@ -251,7 +238,6 @@ def insert_data():
     session.add_all(members_data)
     session.commit()
     
-    # Insert Addresses
     addresses_data = [
         Address(member_user_id=users_dict['Amina_Aminova'], house_number='15', street='Kabanbay Batyr', town='Astana'),
         Address(member_user_id=users_dict['Elena_Elenova'], house_number='22', street='Abay Avenue', town='Astana'),
@@ -267,7 +253,6 @@ def insert_data():
     session.add_all(addresses_data)
     session.commit()
     
-    # Insert Jobs
     jobs_data = [
         Job(member_user_id=users_dict['Amina_Aminova'], required_caregiving_type='babysitter', other_requirements='Must be soft-spoken and patient', date_posted=date(2025, 1, 15)),
         Job(member_user_id=users_dict['Elena_Elenova'], required_caregiving_type='elderly care', other_requirements='Experience with dementia patients preferred', date_posted=date(2025, 1, 16)),
@@ -289,10 +274,8 @@ def insert_data():
     session.add_all(jobs_data)
     session.commit()
     
-    # Get job IDs after commit
     jobs_list = session.query(Job).order_by(Job.job_id).all()
     
-    # Insert Job Applications
     job_applications_data = [
         JobApplication(caregiver_user_id=users_dict['Arman_Armanov'], job_id=jobs_list[0].job_id, date_applied=date(2025, 1, 20)),
         JobApplication(caregiver_user_id=users_dict['David_Davidov'], job_id=jobs_list[0].job_id, date_applied=date(2025, 1, 21)),
@@ -325,7 +308,6 @@ def insert_data():
     session.add_all(job_applications_data)
     session.commit()
     
-    # Insert Appointments
     appointments_data = [
         Appointment(caregiver_user_id=users_dict['Arman_Armanov'], member_user_id=users_dict['Amina_Aminova'], appointment_date=date(2025, 2, 10), appointment_time=time(9, 0), work_hours=3.0, status='accepted'),
         Appointment(caregiver_user_id=users_dict['David_Davidov'], member_user_id=users_dict['Gulnara_Gulnarova'], appointment_date=date(2025, 2, 11), appointment_time=time(14, 0), work_hours=4.0, status='accepted'),
@@ -351,14 +333,9 @@ def insert_data():
 
 
 def update_queries():
-    """
-    Part 2.3: Update SQL Statements
-    """
-    print("=" * 80)
     print("PART 2.3: Update SQL Statements")
-    print("=" * 80)
     
-    # 3.1 Update the phone number of Arman Armanov to +77773414141
+
     print("3.1: Update phone number of Arman Armanov to +77773414141")
     user = session.query(User).filter(User.given_name == 'Arman', User.surname == 'Armanov').first()
     if user:
@@ -368,7 +345,7 @@ def update_queries():
     else:
         print("User not found\n")
     
-    # 3.2 Add $0.3 commission fee to the Caregivers' hourly rate if it's less than $10, or 10% if it's not
+
     print("3.2: Add commission fee to Caregivers' hourly rate")
     print("  - If hourly_rate < $10: add $0.3")
     print("  - If hourly_rate >= $10: add 10%")
@@ -385,14 +362,12 @@ def update_queries():
 
 
 def delete_queries():
-    """
-    Part 2.4: Delete SQL Statements
-    """
-    print("=" * 80)
+
+
     print("PART 2.4: Delete SQL Statements")
-    print("=" * 80)
+
     
-    # 4.1 Delete the jobs posted by Amina Aminova
+
     print("4.1: Delete jobs posted by Amina Aminova")
     member = session.query(Member).join(User).filter(User.given_name == 'Amina', User.surname == 'Aminova').first()
     if member:
@@ -404,7 +379,7 @@ def delete_queries():
     else:
         print("Member not found\n")
     
-    # 4.2 Delete all members who live on Kabanbay Batyr street
+
     print("4.2: Delete all members who live on Kabanbay Batyr street")
     addresses = session.query(Address).filter(Address.street == 'Kabanbay Batyr').all()
     deleted_count = 0
@@ -417,14 +392,12 @@ def delete_queries():
 
 
 def simple_queries():
-    """
-    Part 2.5: Simple Queries
-    """
-    print("=" * 80)
+
+
     print("PART 2.5: Simple Queries")
-    print("=" * 80)
+
     
-    # 5.1 Select caregiver and member names for the accepted appointments
+
     print("5.1: Select caregiver and member names for the accepted appointments")
     appointments = session.query(Appointment).filter(Appointment.status == 'accepted').all()
     for apt in appointments:
@@ -433,21 +406,21 @@ def simple_queries():
         print(f"  Caregiver: {caregiver_name}, Member: {member_name}")
     print(f"Total rows: {len(appointments)}\n")
     
-    # 5.2 List job ids that contain 'soft-spoken' in their other requirements
+
     print("5.2: List job ids that contain 'soft-spoken' in their other requirements")
     jobs = session.query(Job).filter(Job.other_requirements.contains('soft-spoken')).all()
     for job in jobs:
         print(f"  Job ID: {job.job_id}")
     print(f"Total rows: {len(jobs)}\n")
     
-    # 5.3 List the work hours of all babysitter positions
+
     print("5.3: List the work hours of all babysitter positions")
     appointments = session.query(Appointment).join(Caregiver).filter(Caregiver.caregiving_type == 'babysitter').all()
     for apt in appointments:
         print(f"  Work hours: {apt.work_hours}")
     print(f"Total rows: {len(appointments)}\n")
     
-    # 5.4 List the members who are looking for Elderly Care in Astana and have "No pets." rule
+
     print("5.4: List members looking for Elderly Care in Astana with 'No pets.' rule")
     members = session.query(Member).join(User).join(Job).filter(
         Job.required_caregiving_type == 'elderly care',
@@ -461,14 +434,12 @@ def simple_queries():
 
 
 def complex_queries():
-    """
-    Part 2.6: Complex Queries
-    """
-    print("=" * 80)
+
+
     print("PART 2.6: Complex Queries")
-    print("=" * 80)
+
     
-    # 6.1 Count the number of applicants for each job posted by a member
+
     print("6.1: Count the number of applicants for each job posted by a member")
     jobs = session.query(Job).all()
     for job in jobs:
@@ -477,13 +448,13 @@ def complex_queries():
         print(f"  Job ID: {job.job_id}, Member: {member_name}, Applicants: {applicant_count}")
     print(f"Total rows: {len(jobs)}\n")
     
-    # 6.2 Total hours spent by caregivers for all accepted appointments
+
     print("6.2: Total hours spent by caregivers for all accepted appointments")
     total_hours = session.query(func.sum(Appointment.work_hours)).filter(Appointment.status == 'accepted').scalar()
     total_hours = total_hours if total_hours is not None else 0
     print(f"  Total hours: {total_hours}\n")
     
-    # 6.3 Average pay of caregivers based on accepted appointments
+
     print("6.3: Average pay of caregivers based on accepted appointments")
     avg_pay = session.query(func.avg(Caregiver.hourly_rate * Appointment.work_hours)).join(
         Appointment, Caregiver.caregiver_user_id == Appointment.caregiver_user_id
@@ -491,15 +462,15 @@ def complex_queries():
     avg_pay = avg_pay if avg_pay is not None else 0.0
     print(f"  Average pay: ${avg_pay:.2f}\n")
     
-    # 6.4 Caregivers who earn above average based on accepted appointments
+
     print("6.4: Caregivers who earn above average based on accepted appointments")
-    # First calculate average
+
     avg_earnings = session.query(func.avg(Caregiver.hourly_rate * Appointment.work_hours)).join(
         Appointment, Caregiver.caregiver_user_id == Appointment.caregiver_user_id
     ).filter(Appointment.status == 'accepted').scalar()
     
     if avg_earnings is not None:
-        # Then find caregivers above average
+    
         results = session.query(
             User.given_name + ' ' + User.surname,
             func.sum(Caregiver.hourly_rate * Appointment.work_hours)
@@ -522,14 +493,12 @@ def complex_queries():
 
 
 def derived_attribute_query():
-    """
-    Part 2.7: Query with a Derived Attribute
-    """
-    print("=" * 80)
+
+
     print("PART 2.7: Query with a Derived Attribute")
-    print("=" * 80)
+
     
-    # Calculate the total cost to pay for a caregiver for all accepted appointments
+
     print("Calculate total cost to pay for caregivers for all accepted appointments")
     appointments = session.query(Appointment).join(Caregiver).join(User).filter(
         Appointment.status == 'accepted'
@@ -548,23 +517,21 @@ def derived_attribute_query():
 
 
 def view_operation():
-    """
-    Part 2.8: View Operation
-    """
-    print("=" * 80)
+
+
     print("PART 2.8: View Operation")
-    print("=" * 80)
+
     
-    # Create view for job applications and applicants
+
     print("Creating view: job_applications_view")
     from sqlalchemy import text as sql_text
     
     with engine.connect() as conn:
-        # Drop view if exists
+
         conn.execute(sql_text("DROP VIEW IF EXISTS job_applications_view"))
         conn.commit()
         
-        # Create view
+
         conn.execute(sql_text("""
             CREATE VIEW job_applications_view AS
             SELECT 
@@ -585,7 +552,7 @@ def view_operation():
         conn.commit()
         print("View created successfully!\n")
     
-    # Query the view using ORM (we'll use raw SQL for the view since it's a view)
+
     print("Querying the view:")
     with engine.connect() as conn:
         result = conn.execute(sql_text("SELECT * FROM job_applications_view ORDER BY job_id, date_applied"))
@@ -594,44 +561,24 @@ def view_operation():
             print(f"  Job {row[0]}: {row[5]} applied for {row[1]} position on {row[8]}")
         print(f"Total rows: {len(rows)}\n")
 
-
 def main():
-    """
-    Main function to execute all database operations
-    """
-    print("\n" + "=" * 80)
-    print("CSCI 341 Assignment 3 - Part 2")
-    print("Database Operations using SQLAlchemy ORM")
-    print("=" * 80 + "\n")
-    
     try:
-        # Part 2.1: Create tables
+        input("Press Enter to start the database operations...")
         create_tables()
-        
-        # Part 2.2: Insert data
+        input("Press Enter to insert data...")
         insert_data()
-        
-        # Part 2.3: Update queries
+        input("Press Enter to perform update queries...")
         update_queries()
-        
-        # Part 2.4: Delete queries
+        input("Press Enter to perform delete queries...")
         delete_queries()
-        
-        # Part 2.5: Simple queries
+        input("Press Enter to perform simple queries...")
         simple_queries()
-        
-        # Part 2.6: Complex queries
+        input("Press Enter to perform complex queries...")
         complex_queries()
-        
-        # Part 2.7: Query with derived attribute
+        input("Press Enter to perform derived attribute query...")
         derived_attribute_query()
-        
-        # Part 2.8: View operation
+        input("Press Enter to perform view operation...")
         view_operation()
-        
-        print("=" * 80)
-        print("All operations completed successfully!")
-        print("=" * 80)
         
     except Exception as e:
         print(f"Error: {e}")
