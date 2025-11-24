@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Caregivers Platform{% endblock %}
+
+{% block content %}
+<div class="home-page">
+    <h1>Welcome to Caregivers Platform</h1>
+    <p class="subtitle">Manage your caregiver services database</p>
+    
+    <div class="card-grid">
+        <div class="card">
+            <h2>Users</h2>
+            <p>Manage all platform users</p>
+            <a href="{{ url_for('list_users') }}" class="btn btn-primary">View Users</a>
+        </div>
+        
+        <div class="card">
+            <h2>Caregivers</h2>
+            <p>Manage caregiver profiles</p>
+            <a href="{{ url_for('list_caregivers') }}" class="btn btn-primary">View Caregivers</a>
+        </div>
+        
+        <div class="card">
+            <h2>Members</h2>
+            <p>Manage family members seeking care</p>
+            <a href="{{ url_for('list_members') }}" class="btn btn-primary">View Members</a>
+        </div>
+        
+        <div class="card">
+            <h2>Jobs</h2>
+            <p>Manage job postings</p>
+            <a href="{{ url_for('list_jobs') }}" class="btn btn-primary">View Jobs</a>
+        </div>
+        
+        <div class="card">
+            <h2>Job Applications</h2>
+            <p>Manage job applications</p>
+            <a href="{{ url_for('list_job_applications') }}" class="btn btn-primary">View Applications</a>
+        </div>
+        
+        <div class="card">
+            <h2>Appointments</h2>
+            <p>Manage appointments</p>
+            <a href="{{ url_for('list_appointments') }}" class="btn btn-primary">View Appointments</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

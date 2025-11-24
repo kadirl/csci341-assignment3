@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Jobs - Caregivers Platform{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Jobs</h1>
+    <a href="{{ url_for('create_job') }}" class="btn btn-primary">Create New Job</a>
+</div>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Member</th>
+            <th>Caregiving Type</th>
+            <th>Date Posted</th>
+            <th>Requirements</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for job in jobs %}
+        <tr>
+            <td>{{ job.job_id }}</td>
+            <td>{{ job.member.user.given_name }} {{ job.member.user.surname }}</td>
+            <td>{{ job.required_caregiving_type }}</td>
+            <td>{{ job.date_posted }}</td>
+            <td>{{ job.other_requirements[:50] }}{% if job.other_requirements|length > 50 %}...{% endif %}</td>
+            <td class="actions">
+                <a href="{{ url_for('edit_job', job_id=job.job_id) }}" class="btn btn-sm btn-edit">Edit</a>
+                <form method="POST" action="{{ url_for('delete_job', job_id=job.job_id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-sm btn-delete" onclick="return confirm('Are you sure?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
