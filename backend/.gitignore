@@ -1,0 +1,49 @@
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# Virtual environment
+.env
+.venv/
+env/
+ENV/
+venv/
+pip-wheel-metadata/
+
+# Flask cache and session files
+instance/
+*.db
+*.sqlite3
+
+# Flask config files
+config.py
+config.yaml
+config.json
+
+# Pytest cache
+.pytest_cache/
+
+# VS Code settings
+.vscode/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+
+# Migration files
+migrations/
+
+# Log files
+*.log
+
+# Coverage reports
+htmlcov/
+.coverage
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+
