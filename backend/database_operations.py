@@ -563,21 +563,21 @@ def view_operation():
 
 def main():
     try:
-        input("Press Enter to start the database operations...")
+        # input("Press Enter to start the database operations...")
         create_tables()
-        input("Press Enter to insert data...")
+        # input("Press Enter to insert data...")
         insert_data()
-        input("Press Enter to perform update queries...")
+        # input("Press Enter to perform update queries...")
         update_queries()
-        input("Press Enter to perform delete queries...")
+        # input("Press Enter to perform delete queries...")
         delete_queries()
-        input("Press Enter to perform simple queries...")
+        # input("Press Enter to perform simple queries...")
         simple_queries()
-        input("Press Enter to perform complex queries...")
+        # input("Press Enter to perform complex queries...")
         complex_queries()
-        input("Press Enter to perform derived attribute query...")
+        # input("Press Enter to perform derived attribute query...")
         derived_attribute_query()
-        input("Press Enter to perform view operation...")
+        # input("Press Enter to perform view operation...")
         view_operation()
         
     except Exception as e:
